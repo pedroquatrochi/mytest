@@ -6,6 +6,7 @@
 
 <body>
     <h1>Bem Vindos a Tecnologia {{titulo}}</h1>
+    <p><a href="{{ url_for('index') }}">Página inicial</a></p>
     <form action="{{ url_for('criarusuario') }}" method="post">
         <p><label for="user">Nome</label></p>
         <p><input type="text" id="user" name="user"></p>

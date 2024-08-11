@@ -1,38 +1,41 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
-<head> 
-    <title>BBB - Comprar e vender - Cadastro de {{titulo}}</title>
+<head>
+    <title>World E-Commerce - Cadastro de {{titulo}}</title>
 </head>
-
 <body>
-    <h4>Cadastro de {{titulo}}</h4>
-    <form action="/categoria/criar" method="post">
-        <p><label for="nome">Nome</label>
-        <input type="text" id="nome" name="nome"></p>
+    <h1>Bem Vindos à Tecnologia {{titulo}}</h1>
+    <p><a href="{{ url_for('index') }}">Página inicial</a></p>
+    <form action="{{ url_for('criarcategoria') }}" method="post">
+        <p><label for="nome">Nome</label></p>
+        <p><input type="text" id="nome" name="nome"></p>
 
-        <p><label for="desc">Descricao</label>
-        <input type="text" id="desc" name="desc"></p>       
+        <p><label for="desc">Descrição</label></p>
+        <p><input type="text" id="desc" name="desc"></p>
 
         <p><input type="submit" value="Cadastrar"></p>
-    </form>
+    </form>   
 
     <h4>Lista de {{titulo}}</h4>
     <table>
         <thead>
             <tr>
                 <th>Nome</th>
-                <th>Descricao</th>
+                <th>Descrição</th>
+                <th>Editar</th>
+                <th>Deletar</th>
             </tr>
         </thead>
         <tbody>
             {% for categoria in categorias %}
-                <tr>
-                    <td>{{ categoria.nome }}</td>
-                    <td>{{ categoria.desc }}</td>
-                </tr>
+            <tr>
+                <td>{{ categoria.nome }}</td>
+                <td>{{ categoria.desc }}</td>
+                <td><a href="{{ url_for('editarcategoria', id=categoria.id) }}">Editar</a></td>
+                <td><a href="{{ url_for('deletarcategoria', id=categoria.id) }}">Deletar</a></td>
+            </tr>         
             {% endfor %}
         </tbody>
     </table>
 </body>
-
 </html>

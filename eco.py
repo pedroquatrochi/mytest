@@ -48,6 +48,10 @@ class Anuncio(db.Model):
         self.cat_id = cat_id
         self.usu_id = usu_id
 
+@app.errorhandler(404)
+def paginainexistente(error):
+    return render_template('paginex.html')
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -119,11 +123,29 @@ def categoria():
     return render_template('categoria.html', categorias = Categoria.query.all(), titulo='Categoria')
 
 @app.route("/categoria/criar", methods=['POST'])
-def novacategoria():
+def criarcategoria():
     categoria = Categoria(request.form.get('nome'), request.form.get('desc'))
     db.session.add(categoria)
     db.session.commit()
-    return redirect(url_for('categoria.html'))
+    return redirect(url_for('categoria'))
+
+@app.route("/categoria/editar/<int:id>", methods=['GET', 'POST'])
+def editarcategoria(id):
+    categoria = Categoria.query.get(id)
+    if request.method == 'POST':
+        categoria.nome = request.form.get('nome')
+        categoria.desc = request.form.get('desc')
+        db.session.commit()
+        return redirect(url_for('categoria'))
+    return render_template('editcategoria.html', categoria=categoria, titulo="Categoria")
+
+@app.route("/categoria/deletar/<int:id>")
+def deletarcategoria(id):
+    categoria = Categoria.query.get(id)
+    db.session.delete(categoria)
+    db.session.commit()
+    return redirect(url_for('categoria'))
+
 
 @app.route('/relatorios/vendas')
 def relvendas():
