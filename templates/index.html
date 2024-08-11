@@ -1,13 +1,14 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
-    <title>World E-Commerce</title>
-    <link rel="stylesheet" href="index.css">
+<head> 
+    <title>BBB - Comprar e vender</title>
 </head>
+
 <body>
-    <h1>Bem Vindos a Tecnologia</h1>
-    <p><a href="{{ url_for('usuario') }}">Cadastro de Usuário</a></p>
-    <p><a href="{{ url_for('anuncio') }}">Cadastro de Anúncio</a></p>
-    <p><a href="{{ url_for('pergunta') }}">Perguntas</a></p>
+    <h4> Bem vindo ao BBB</h4>
+    <p><a href={{url_for("usuario")}}> Cadastro Usuario</a></p>
+    <p><a href={{url_for("anuncio")}}> Cadastro Anuncio</a></p>
+    <p><a href={{url_for("categoria")}}> Config Categoria</a></p>
 </body>
+
 </html>
