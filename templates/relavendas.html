@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Relatório de Vendas - {{ titulo }}</title>
+    <link rel="stylesheet" href="../static/css/edits.css">
+</head>
+<body>
+    <h2>{{ titulo }}</h2>
+    {% if vendas %}
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Nome do Anúncio</th>
+                    <th>Quantidade Vendida</th>
+                    <th>Data da Venda</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for venda in vendas %}
+                    <tr>
+                        <td>{{ venda.anuncio.nome }}</td>
+                        <td>{{ venda.quantidade }}</td>
+                        <td>{{ venda.data_venda }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Você ainda não realizou nenhuma venda.</p>
+    {% endif %}
+</body>
+</html>

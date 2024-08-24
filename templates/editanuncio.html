@@ -1,0 +1,46 @@
+<!doctype html>
+<html>
+<head>
+    <title>World E-Commerce - Edição de {{titulo}}</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../static/css/style.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h4 class="mb-4">Edição de {{titulo}}</h4>
+        <form action="{{ url_for('editaranuncio', id=anuncio.id) }}" method="post">
+            <div class="form-group">
+                <label for="nome">Nome do Anúncio:</label>
+                <input type="text" class="form-control" id="nome" name="nome" value="{{anuncio.nome}}" required>
+            </div>
+            <div class="form-group">
+                <label for="desc">Descrição:</label>
+                <input type="text" class="form-control" id="desc" name="desc" value="{{anuncio.desc}}">
+            </div>
+            <div class="form-group">
+                <label for="qtd">Quantidade:</label>
+                <input type="number" class="form-control" id="qtd" name="qtd" value="{{anuncio.qtd}}" required>
+            </div>
+            <div class="form-group">
+                <label for="preco">Preço:</label>
+                <input type="number" class="form-control" step="0.01" id="preco" name="preco" value="{{anuncio.preco}}" required>
+            </div>
+            <div class="form-group">
+                <label for="cat">Categoria:</label>
+                <select id="cat" name="cat" class="form-control" required>
+                    {% for categoria in categorias %}
+                        <option value="{{categoria.id}}" {% if categoria.id == anuncio.cat_id %}selected{% endif %}>{{categoria.nome}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Alterar</button>
+            <a href="{{ url_for('anuncio') }}" class="btn btn-secondary ml-2">Cancelar</a>
+        </form>
+    </div>
+
+    <!-- Adicionando o JavaScript do Bootstrap e suas dependências -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

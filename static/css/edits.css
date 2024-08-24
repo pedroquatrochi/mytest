@@ -1,0 +1,58 @@
+/* edits.css */
+
+/* Adiciona margem ao corpo da página */
+body {
+    margin: 20px;
+    font-family: Arial, sans-serif;
+}
+
+/* Estiliza o título */
+h4 {
+    margin-bottom: 20px;
+    color: #333;
+}
+
+/* Estiliza o formulário */
+form {
+    background-color: #f9f9f9;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Estiliza os labels e inputs */
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+input[type="text"] {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin-bottom: 10px;
+}
+
+/* Estiliza o botão de submit */
+input[type="submit"] {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+/* Estiliza o botão de cancelar */
+a {
+    color: #007bff;
+    text-decoration: none;
+    font-size: 16px;
+}
+
+a:hover {
+    text-decoration: underline;
+}

@@ -1,11 +1,23 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for,flash
 from flask_sqlalchemy import SQLAlchemy
+from flask_login import (current_user, LoginManager,
+                             login_user, logout_user,
+                             login_required)
+import hashlib
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://pidrito:toledo22@localhost:3306/meubanco'
+#app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://pidrito:toledo22@localhost:3306/meubanco'
+
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://quatrochi:toledo22@quatrochi.mysql.pythonanywhere-services.com:3306/quatrochi$meubanco'
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
+
+app.secret_key = '258369'
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
 
 class Usuario(db.Model):
     id = db.Column('usu_id', db.Integer, primary_key=True)
@@ -19,6 +31,18 @@ class Usuario(db.Model):
         self.email = email
         self.senha = senha
         self.end = end
+
+    def is_authenticated(self):
+        return True
+
+    def is_active(self):
+        return True
+
+    def is_anonymous(self):
+        return False
+
+    def get_id(self):
+        return str(self.id)
 
 class Categoria(db.Model):
     __tablename__ = "categoria"
@@ -40,6 +64,7 @@ class Anuncio(db.Model):
     cat_id = db.Column('cat_id',db.Integer, db.ForeignKey("categoria.cat_id"))
     usu_id = db.Column('usu_id',db.Integer, db.ForeignKey("usuario.usu_id"))
 
+    categoria = db.relationship('Categoria', backref=db.backref('anuncios', lazy=True))
     def __init__(self, nome, desc, qtd, preco, cat_id, usu_id):
         self.nome = nome
         self.desc = desc
@@ -48,22 +73,118 @@ class Anuncio(db.Model):
         self.cat_id = cat_id
         self.usu_id = usu_id
 
+class Compra(db.Model):
+    __tablename__ = 'compra'
+    
+    id = db.Column('comp_id', db.Integer, primary_key=True)
+    usuario_id = db.Column('usu_id', db.Integer, db.ForeignKey('usuario.usu_id'), nullable=False)
+    anuncio_id = db.Column('anu_id', db.Integer, db.ForeignKey('anuncio.anu_id'), nullable=False)
+    quantidade = db.Column('comp_qtd', db.Integer, nullable=False)
+    data_compra = db.Column('comp_data', db.DateTime, default=db.func.current_timestamp())
+
+    # Relacionamento com a tabela Usuario
+    usuario = db.relationship('Usuario', backref=db.backref('compras', lazy=True))
+    
+    # Relacionamento com a tabela Anuncio
+    anuncio = db.relationship('Anuncio', backref=db.backref('compras', lazy=True))
+    
+    def __init__(self, usuario_id, anuncio_id, quantidade):
+        self.usuario_id = usuario_id
+        self.anuncio_id = anuncio_id
+        self.quantidade = quantidade
+
+class Pergunta(db.Model):
+    __tablename__ = 'pergunta'
+    
+    id = db.Column('perg_id', db.Integer, primary_key=True)
+    anuncio_id = db.Column('anu_id', db.Integer, db.ForeignKey('anuncio.anu_id'), nullable=False)
+    usuario_id = db.Column('usu_id', db.Integer, db.ForeignKey('usuario.usu_id'), nullable=False)
+    pergunta = db.Column('perg_texto', db.String(512), nullable=False)
+    data_pergunta = db.Column('perg_data', db.DateTime, default=db.func.current_timestamp())
+
+    anuncio = db.relationship('Anuncio', backref=db.backref('perguntas', lazy=True))
+    usuario = db.relationship('Usuario', backref=db.backref('perguntas', lazy=True))
+
+    def __init__(self, anuncio_id, usuario_id, pergunta):
+        self.anuncio_id = anuncio_id
+        self.usuario_id = usuario_id
+        self.pergunta = pergunta
+
+class Resposta(db.Model):
+    __tablename__ = 'resposta'
+    
+    id = db.Column('resp_id', db.Integer, primary_key=True)
+    pergunta_id = db.Column('perg_id', db.Integer, db.ForeignKey('pergunta.perg_id'), nullable=False)
+    usuario_id = db.Column('usu_id', db.Integer, db.ForeignKey('usuario.usu_id'), nullable=False)
+    resposta = db.Column('resp_texto', db.String(512), nullable=False)
+    data_resposta = db.Column('resp_data', db.DateTime, default=db.func.current_timestamp())
+
+    pergunta = db.relationship('Pergunta', backref=db.backref('respostas', lazy=True))
+    usuario = db.relationship('Usuario', backref=db.backref('respostas', lazy=True))
+
+    def __init__(self, pergunta_id, usuario_id, resposta):
+        self.pergunta_id = pergunta_id
+        self.usuario_id = usuario_id
+        self.resposta = resposta
+
+class Favorito(db.Model):
+    __tablename__ = 'favorito'
+    
+    id = db.Column('fav_id', db.Integer, primary_key=True)
+    usuario_id = db.Column('usu_id', db.Integer, db.ForeignKey('usuario.usu_id'), nullable=False)
+    anuncio_id = db.Column('anu_id', db.Integer, db.ForeignKey('anuncio.anu_id'), nullable=False)
+
+    usuario = db.relationship('Usuario', backref=db.backref('favoritos', lazy=True))
+    anuncio = db.relationship('Anuncio', backref=db.backref('favoritos', lazy=True))
+
+    def __init__(self, usuario_id, anuncio_id):
+        self.usuario_id = usuario_id
+        self.anuncio_id = anuncio_id
+
 @app.errorhandler(404)
 def paginainexistente(error):
     return render_template('paginex.html')
 
+@login_manager.user_loader
+def load_user(id):
+    return Usuario.query.get(int(id))
+
+@app.route('/login', methods=['POST', 'GET'])
+def login():
+    if request.method == 'POST':
+        email = request.form.get('email')
+        senha = request.form.get('senha')
+
+        user = Usuario.query.filter_by(email=email, senha=senha).first()
+
+        if user:
+            login_user(user)
+            return redirect(url_for('index'))
+        else:
+            return redirect(url_for('login'))
+    return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    logout_user()
+    return redirect(url_for('index'))
+
 @app.route('/')
+@login_required
 def index():
-    return render_template('index.html')
+    anuncios = Anuncio.query.all()
+    return render_template('index.html', anuncios=anuncios)
 
 @app.route('/cad/usuario')
+@login_required
 def usuario():
     usuarios = Usuario.query.all()  # Obter todos os usuários do banco de dados
     return render_template('usuario.html', usuarios=usuarios, titulo='Cadastro de Usuario')
 
 @app.route("/usuario/criar", methods=['POST'])
 def criarusuario():
-    usuario = Usuario(request.form.get('user'), request.form.get('email'),request.form.get('senha'),request.form.get('end'))
+    hash = hashlib.sha512(str(request.form.get('senha')).encode('utf-8')).hexdigest()
+    usuario = Usuario(request.form.get('user'), request.form.get('email'),hash, request.form.get('end'))
     db.session.add(usuario)
     db.session.commit()
     return redirect(url_for('usuario'))
@@ -79,7 +200,7 @@ def editarusuario(id):
     if request.method == 'POST':
         usuario.nome = request.form.get('user')
         usuario.email = request.form.get('email')
-        usuario.senha = request.form.get('senha')
+        usuario.senha = hashlib.sha512(str(request.form.get('senha')).encode('utf-8')).hexdigest()
         usuario.end = request.form.get('end')
         db.session.add(usuario)
         db.session.commit()
@@ -102,21 +223,68 @@ def criaranuncio():
     anuncio = Anuncio(request.form.get('nome'), request.form.get('desc'),request.form.get('qtd'),request.form.get('preco'),request.form.get('cat'),request.form.get('uso'))
     db.session.add(anuncio)
     db.session.commit()
-    return redirect(url_for('anuncio.html'))
+    return redirect(url_for('anuncio'))
 
-@app.route('/anuncios/pergunta')
+@app.route("/anuncio/editar/<int:id>", methods=['GET', 'POST'])
+def editaranuncio(id):
+    anuncio = Anuncio.query.get(id)
+    if request.method == 'POST':
+        anuncio.nome = request.form.get('nome')
+        anuncio.desc = request.form.get('desc')
+        anuncio.qtd = request.form.get('qtd')
+        anuncio.preco = request.form.get('preco')
+        anuncio.cat_id = request.form.get('cat')
+        anuncio.usu_id = request.form.get('uso')
+        
+        db.session.commit()
+        return redirect(url_for('anuncio'))
+    return render_template('editanuncio.html', anuncio=anuncio, categorias=Categoria.query.all(), titulo="Editar Anúncio")
+
+@app.route("/anuncio/deletar/<int:id>")
+def deletaranuncio(id):
+    anuncio = Anuncio.query.get(id)
+    db.session.delete(anuncio)
+    db.session.commit()
+    return redirect(url_for('anuncio'))
+
+@app.route('/anuncios/pergunta', methods=['GET', 'POST'])
+@login_required
 def pergunta():
-    return render_template('pergunta.html')
+    if request.method == 'POST':
+        anuncio_id = request.form.get('anuncio')
+        pergunta_texto = request.form.get('pergunta')
+        nova_pergunta = Pergunta(anuncio_id=anuncio_id, usuario_id=current_user.id, pergunta=pergunta_texto)
+        db.session.add(nova_pergunta)
+        db.session.commit()
+        flash('Sua pergunta foi enviada com sucesso!')
+        return redirect(url_for('pergunta'))
 
-@app.route('/anuncios/compra')
-def compra():
-    print('anúncio comprado')
-    return ''
+    anuncios = Anuncio.query.all()
+    return render_template('pergunta.html', anuncios=anuncios)
 
-@app.route('/anuncios/favoritos')
-def favoritos():
-    print('favorito inserido')
-    return ''
+@app.route('/anuncios/compra/<int:anuncio_id>', methods=['POST'])
+@login_required
+def compra(anuncio_id):
+    anuncio = Anuncio.query.get_or_404(anuncio_id)
+    quantidade_comprada = request.form.get('quantidade')
+
+    if anuncio.qtd >= int(quantidade_comprada):
+        anuncio.qtd -= int(quantidade_comprada)
+        nova_compra = Compra(usuario_id=current_user.id, anuncio_id=anuncio_id, quantidade=quantidade_comprada)
+        db.session.add(nova_compra)
+        db.session.commit()
+        flash('Compra realizada com sucesso!', 'success')
+    else:
+        flash('Quantidade insuficiente disponível.', 'danger')
+
+    return redirect(url_for('anuncio', id=anuncio_id))
+
+@app.route('/favoritos')
+@login_required
+def favoritos_usuario():
+    # Buscar todos os anúncios favoritos do usuário logado
+    favoritos = Favorito.query.filter_by(usuario_id=current_user.id).all()
+    return render_template('favoritos.html', favoritos=favoritos, titulo="Meus Favoritos")
 
 @app.route("/config/categoria")
 def categoria():
@@ -146,14 +314,19 @@ def deletarcategoria(id):
     db.session.commit()
     return redirect(url_for('categoria'))
 
-
 @app.route('/relatorios/vendas')
+@login_required
 def relvendas():
-    return render_template('relavendas.html')
+    # Consultar todas as vendas feitas pelo usuário logado
+    vendas = Compra.query.filter_by(usu_id=current_user.id).all()
+    return render_template('relavendas.html', vendas=vendas, titulo="Relatório de Vendas")
 
 @app.route('/relatorios/compras')
+@login_required
 def relcompras():
-    return render_template('relacompras.html')
+    # Consultar todas as compras feitas pelo usuário logado
+    compras = Compra.query.filter_by(usu_id=current_user.id).all()
+    return render_template('relacompras.html', compras=compras, titulo="Relatório de Compras")
 
 if __name__ == 'eco':
     with app.app_context():

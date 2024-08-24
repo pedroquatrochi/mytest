@@ -2,28 +2,29 @@
 <html>
 <head> 
     <title>World E-Commerce - Cadastro de {{titulo}}</title>
+    <link rel="stylesheet" href="../static/css/style.css">
 </head>
 
 <body>
-    <h4>Cadastro de {{titulo}}</h4>
+    <h1>Cadastro de {{titulo}}</h1>
     <p><a href="{{ url_for('index') }}">Página inicial</a></p>
-    <form action="/anuncio/criar" method="post">
+    <form action="/anuncio/criar" method="POST">
         <p><label for="nome">Nome</label>
-        <input type="text" id="nome" name="nome"></p>
+        <input type="text" id="nome" name="nome" required></p>
 
         <p><label for="desc">Desc</label>
         <textarea rows="4" cols="50" id="desc" name="desc"></textarea></p>       
 
         <p><label for="qtd">Quantidade</label>
-        <input type="text" id="qtd" name="qtd"></p>
+        <input type="text" id="qtd" name="qtd" required></p>
 
         <p><label for="preco">Preco</label>
-        <input type="text" id="preco" name="preco"></p>
+        <input type="text" id="preco" name="preco" required></p>
         
         <p><label for="cat">Categoria</label>
-        <select id="cat" name="cat">
+        <select id="cat" name="cat" required>
             {% for categoria in categorias %} 
-                <option value="{{ categoria.id }}">{{ categoria.nome }}</option>
+                <option value="{{ categoria.id }}" required>{{ categoria.nome }}</option>
             {% endfor %}
         </select></p>
 
@@ -31,6 +32,7 @@
         <input type="text" id="uso" name="uso"></p>
 
         <p><input type="submit" value="Cadastrar"></p>
+        <button type="reset" class="btn btn-secondary">Limpar</button>
     </form>
 
     <h4>Lista de {{titulo}}</h4>
@@ -42,6 +44,7 @@
                 <th>Qtd</th>
                 <th>Preco</th>
                 <th>Categoria</th>
+                <th>Ações</th>
             </tr>
         </thead>
         <tbody>
@@ -50,8 +53,12 @@
                     <td>{{ anuncio.nome }}</td>
                     <td>{{ anuncio.desc }}</td>
                     <td>{{ anuncio.qtd }}</td>
-                    <td>{{ anuncio.preco }}</td>
-                    <td>{{ anuncio.cat_id }}</td>
+                    <td>{{ "{:.2f}".format(anuncio.preco) }}</td>
+                    <td>{{ anuncio.categoria.nome }}</td>
+                    <td>
+                        <a href="{{ url_for('editaranuncio', id=anuncio.id) }}">Editar</a>
+                        <a href="{{ url_for('deletaranuncio', id=anuncio.id) }}">Deletar</a>
+                    </td>
                 </tr>
             {% endfor %}
         </tbody>

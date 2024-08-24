@@ -1,26 +1,38 @@
 <!doctype html>
 <html>
-<head> 
-    <title>BBB - Comprar e vender - Edicao de {{titulo}}</title>
+<head>
+    <title>World E-Commerce - Edição de {{titulo}}</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../static/css/style.css">
 </head>
-
 <body>
-    <h4>Edicao de {{titulo}}</h4>
-    <form action="{{ url_for('editarusuario', id=usuario.id) }}" method="post">
-        <p><label for="user">Username</label>
-        <input type="text" id="user" name="user" value="{{usuario.nome}}"></p>
+    <div class="container mt-5">
+        <h4 class="mb-4">Edição de {{titulo}}</h4>
+        <form action="{{ url_for('editarusuario', id=usuario.id) }}" method="post">
+            <div class="form-group">
+                <label for="user">Username:</label>
+                <input type="text" class="form-control" id="user" name="user" value="{{usuario.nome}}" required>
+            </div>
+            <div class="form-group">
+                <label for="email">E-mail:</label>
+                <input type="email" class="form-control" id="email" name="email" value="{{usuario.email}}" required>
+            </div>
+            <div class="form-group">
+                <label for="senha">Password:</label>
+                <input type="password" class="form-control" id="senha" name="senha" value="{{usuario.senha}}" required>
+            </div>
+            <div class="form-group">
+                <label for="end">Endereço:</label>
+                <input type="text" class="form-control" id="end" name="end" value="{{usuario.end}}" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Alterar</button>
+            <a href="{{ url_for('usuario') }}" class="btn btn-secondary ml-2">Cancelar</a>
+        </form>
+    </div>
 
-        <p><label for="email">E-mail</label>
-        <input type="text" id="email" name="email" value="{{usuario.email}}"></p>       
-
-        <p><label for="senha">Password</label>
-        <input type="text" id="senha" name="senha" value="{{usuario.senha}}"></p>
-
-        <p><label for="end">Endereco</label>
-        <input type="text" id="end" name="end" value="{{usuario.end}}"></p>
-        
-        <p><input type="submit" value="Alterar"></p>
-    </form>
-    <a href="{{url_for('usuario')}}">Cancelar</a>
+    <!-- Adicionando o JavaScript do Bootstrap e suas dependências -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>

@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Relatório de Compras - {{ titulo }}</title>
+    <link rel="stylesheet" href="../static/css/edits.css">
+</head>
+<body>
+    <h2>{{ titulo }}</h2>
+    {% if compras %}
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Nome do Anúncio</th>
+                    <th>Quantidade Comprada</th>
+                    <th>Data da Compra</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for compra in compras %}
+                    <tr>
+                        <td>{{ compra.anuncio.nome }}</td>
+                        <td>{{ compra.quantidade }}</td>
+                        <td>{{ compra.data_compra }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Você ainda não realizou nenhuma compra.</p>
+    {% endif %}
+</body>
+</html>
