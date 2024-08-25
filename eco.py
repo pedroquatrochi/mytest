@@ -6,9 +6,9 @@ from flask_login import (current_user, LoginManager,
 import hashlib
 
 app = Flask(__name__)
-#app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://pidrito:toledo22@localhost:3306/meubanco'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://pidrito:toledo22@localhost:3306/meubanco'
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://quatrochi:toledo22@quatrochi.mysql.pythonanywhere-services.com:3306/quatrochi$meubanco'
+#app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://quatrochi:toledo22@quatrochi.mysql.pythonanywhere-services.com:3306/quatrochi$meubanco'
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -262,29 +262,53 @@ def pergunta():
     anuncios = Anuncio.query.all()
     return render_template('pergunta.html', anuncios=anuncios)
 
-@app.route('/anuncios/compra/<int:anuncio_id>', methods=['POST'])
+@app.route('/anuncios/compra', methods=['GET', 'POST'])
 @login_required
-def compra(anuncio_id):
-    anuncio = Anuncio.query.get_or_404(anuncio_id)
-    quantidade_comprada = request.form.get('quantidade')
-
-    if anuncio.qtd >= int(quantidade_comprada):
-        anuncio.qtd -= int(quantidade_comprada)
-        nova_compra = Compra(usuario_id=current_user.id, anuncio_id=anuncio_id, quantidade=quantidade_comprada)
-        db.session.add(nova_compra)
-        db.session.commit()
-        flash('Compra realizada com sucesso!', 'success')
-    else:
-        flash('Quantidade insuficiente disponível.', 'danger')
-
-    return redirect(url_for('anuncio', id=anuncio_id))
+def compra():
+    if request.method == 'POST':
+        anuncio_id = request.form.get('anuncio_id')
+        quantidade_comprada = request.form.get('quantidade')
+        anuncio = Anuncio.query.get_or_404(anuncio_id)
+        
+        if anuncio.qtd >= int(quantidade_comprada):
+            anuncio.qtd -= int(quantidade_comprada)
+            nova_compra = Compra(usuario_id=current_user.id, anuncio_id=anuncio_id, quantidade=quantidade_comprada)
+            db.session.add(nova_compra)
+            db.session.commit()
+            flash('Compra realizada com sucesso!', 'success')
+        else:
+            flash('Quantidade insuficiente disponível.', 'danger')
+        return redirect(url_for('compra'))
+    
+    anuncios = Anuncio.query.all()
+    return render_template('compra.html', anuncios=anuncios, titulo="Comprar Anúncio")
 
 @app.route('/favoritos')
 @login_required
 def favoritos_usuario():
-    # Buscar todos os anúncios favoritos do usuário logado
     favoritos = Favorito.query.filter_by(usuario_id=current_user.id).all()
-    return render_template('favoritos.html', favoritos=favoritos, titulo="Meus Favoritos")
+    compras = Compra.query.filter_by(usuario_id=current_user.id).all()
+    
+    compras_ids = {compra.anuncio_id for compra in compras}
+    
+    return render_template('favoritos.html', favoritos=favoritos, compras_ids=compras_ids)
+
+@app.route('/adicionar_favorito/<int:anuncio_id>', methods=['POST'])
+@login_required
+def adicionar_favorito(anuncio_id):
+    if not current_user.is_authenticated:
+        return redirect(url_for('login'))
+    
+    favorito_existente = Favorito.query.filter_by(usuario_id=current_user.id, anuncio_id=anuncio_id).first()
+    if not favorito_existente:
+        favorito = Favorito(usuario_id=current_user.id, anuncio_id=anuncio_id)
+        db.session.add(favorito)
+        db.session.commit()
+        flash('Anúncio adicionado aos favoritos!', 'success')
+    else:
+        flash('Anúncio já está na lista de favoritos.', 'info')
+    
+    return redirect(url_for('index'))
 
 @app.route("/config/categoria")
 def categoria():

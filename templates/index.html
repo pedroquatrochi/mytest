@@ -8,7 +8,7 @@
 </head>
 <body>
     <div class="container mt-4">
-        <h1 class="mb-4">Bem-vindo World E-Commerce</h1>
+        <h1 class="mb-4">Bem-vindo ao World E-Commerce</h1>
         
         <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
             <a class="navbar-brand" href="#">Menu</a>
@@ -19,6 +19,9 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('anuncio') }}">Cadastro de Anúncio</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('compra') }}">Compra</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('pergunta') }}">Pergunta</a>
@@ -43,22 +46,9 @@
         </nav>
         
         <div class="row">
-            {% for anuncio in anuncios %}
-                <div class="col-md-4 mb-4">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title">{{ anuncio.nome }}</h5>
-                            <form action="{{ url_for('compra', anuncio_id=anuncio.id) }}" method="post">
-                                <div class="form-group">
-                                    <label for="quantidade">Quantidade:</label>
-                                    <input type="number" id="quantidade" name="quantidade" class="form-control" min="1" required>
-                                </div>
-                                <button type="submit" class="btn btn-primary">Comprar</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            {% endfor %}
+            <div class="col-md-12">
+                <p>Bem-vindo à nossa plataforma de e-commerce. Use o menu para navegar.</p>
+            </div>
         </div>
     </div>
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
